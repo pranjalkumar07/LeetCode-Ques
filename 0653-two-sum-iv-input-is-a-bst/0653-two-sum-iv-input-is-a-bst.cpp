@@ -9,32 +9,73 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
-class Solution {
-public:
-    void inorder(TreeNode* root, vector<int>& ans) {
-        if (root == nullptr)
-            return;
 
-        inorder(root->left, ans);
-        ans.push_back(root->val);
-        inorder(root->right, ans);
+class BSTIterator {
+private:
+    stack<TreeNode*> st;
+    bool reverse;
+
+public:
+    BSTIterator(TreeNode* root, bool isReverse) {
+        reverse = isReverse;
+        pushAll(root);
     }
 
-    bool findTarget(TreeNode* root, int k) {
-        vector<int> ans;
-         inorder(root, ans);
+    void pushAll(TreeNode* node) {
 
-        int i = 0;
-        int j = ans.size() - 1;
+        while (node != NULL) {
+
+            st.push(node);
+
+            if (reverse == false) {
+                node = node->left;
+            }
+            else {
+                node = node->right;
+            }
+        }
+    }
+
+    int next() {
+
+        TreeNode* tempNode = st.top();
+        st.pop();
+
+        if (reverse == false) {
+            pushAll(tempNode->right);
+        }
+        else {
+            pushAll(tempNode->left);
+        }
+
+        return tempNode->val;
+    }
+};
+
+class Solution {
+public:
+    bool findTarget(TreeNode* root, int k) {
+
+        if (root == NULL)
+            return false;
+
+        BSTIterator left(root, false);   // Inorder Iterator
+        BSTIterator right(root, true);   // Reverse Inorder Iterator
+
+        int i = left.next();
+        int j = right.next();
 
         while (i < j) {
-            int sum = ans[i] + ans[j];
-            if (sum == k)
+
+            if (i + j == k) {
                 return true;
-            else if (sum < k)
-                i++;
-            else
-                j--;
+            }
+            else if (i + j < k) {
+                i = left.next();
+            }
+            else {
+                j = right.next();
+            }
         }
 
         return false;
